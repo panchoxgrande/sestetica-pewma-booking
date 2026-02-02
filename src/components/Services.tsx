@@ -1,30 +1,40 @@
 import { motion } from "framer-motion";
-import { Sparkles, Syringe, Zap, Heart } from "lucide-react";
+import { Syringe, Sparkles, Heart } from "lucide-react";
 
-const services = [
+const serviceCategories = [
   {
     icon: Syringe,
     title: "Toxina Botulínica",
-    description: "Tratamiento para suavizar líneas de expresión y arrugas, logrando un aspecto natural y rejuvenecido.",
-    duration: "1 hora",
+    items: [
+      "Tercio superior",
+      "Bruxismo",
+      "Baby botox",
+      "Cuello de Nefertiti",
+      "Hiperhidrosis palmar o axilar",
+      "Sonrisa gingival",
+      "Mentón empedrado o de naranja",
+      "Bunnys lines o líneas de conejo",
+    ],
   },
   {
     icon: Sparkles,
     title: "Ácido Hialurónico",
-    description: "Relleno dérmico para restaurar volumen, hidratar la piel y definir contornos faciales.",
-    duration: "1 hora",
-  },
-  {
-    icon: Zap,
-    title: "Radiofrecuencia",
-    description: "Tecnología avanzada para estimular colágeno, reafirmar y rejuvenecer la piel sin cirugía.",
-    duration: "1 hora",
+    items: [
+      "Relleno de labios",
+      "Relleno de mentón",
+      "Relleno de pómulos",
+      "Rinomodelación",
+      "Perfilado de mandíbula",
+    ],
   },
   {
     icon: Heart,
-    title: "Bioestimulación",
-    description: "Tratamientos regenerativos que estimulan la producción natural de colágeno y elastina.",
-    duration: "1 hora",
+    title: "Bioestimuladores",
+    items: [
+      "Sculptra",
+      "ADN de salmón",
+      "Bioestimulador para ojera",
+    ],
   },
 ];
 
@@ -49,31 +59,36 @@ const Services = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service, index) => (
+        <div className="grid md:grid-cols-3 gap-8">
+          {serviceCategories.map((category, index) => (
             <motion.div
-              key={service.title}
+              key={category.title}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              transition={{ duration: 0.6, delay: index * 0.15 }}
               className="group p-8 bg-card/50 border border-border rounded-lg hover:border-primary/50 transition-all duration-500 hover:glow-gold"
             >
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors duration-300">
-                <service.icon className="w-7 h-7 text-primary" />
+                <category.icon className="w-7 h-7 text-primary" />
               </div>
               
-              <h3 className="font-display text-2xl text-foreground mb-3">
-                {service.title}
+              <h3 className="font-display text-2xl text-foreground mb-5">
+                {category.title}
               </h3>
               
-              <p className="font-body text-sm text-muted-foreground mb-4 line-clamp-3">
-                {service.description}
-              </p>
+              <ul className="space-y-2">
+                {category.items.map((item) => (
+                  <li key={item} className="flex items-center gap-2 font-body text-sm text-muted-foreground">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               
-              <div className="flex items-center gap-2 text-xs font-body text-primary uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-xs font-body text-primary uppercase tracking-wider mt-6 pt-4 border-t border-border/50">
                 <span className="w-4 h-px bg-primary" />
-                Duración: {service.duration}
+                Duración: 1 hora
               </div>
             </motion.div>
           ))}
