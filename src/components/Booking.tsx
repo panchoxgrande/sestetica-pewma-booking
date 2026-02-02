@@ -5,11 +5,38 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-const services = [
-  { id: "botox", name: "Toxina Botulínica", duration: "1 hora" },
-  { id: "hialuronico", name: "Ácido Hialurónico", duration: "1 hora" },
-  { id: "radiofrecuencia", name: "Radiofrecuencia", duration: "1 hora" },
-  { id: "bioestimulacion", name: "Bioestimulación", duration: "1 hora" },
+const serviceCategories = [
+  {
+    category: "Toxina Botulínica",
+    items: [
+      { id: "tercio-superior", name: "Tercio superior" },
+      { id: "bruxismo", name: "Bruxismo" },
+      { id: "baby-botox", name: "Baby botox" },
+      { id: "cuello-nefertiti", name: "Cuello de Nefertiti" },
+      { id: "hiperhidrosis", name: "Hiperhidrosis palmar o axilar" },
+      { id: "sonrisa-gingival", name: "Sonrisa gingival" },
+      { id: "menton-empedrado", name: "Mentón empedrado o de naranja" },
+      { id: "bunnys-lines", name: "Bunnys lines o líneas de conejo" },
+    ],
+  },
+  {
+    category: "Ácido Hialurónico",
+    items: [
+      { id: "relleno-labios", name: "Relleno de labios" },
+      { id: "relleno-menton", name: "Relleno de mentón" },
+      { id: "relleno-pomulos", name: "Relleno de pómulos" },
+      { id: "rinomodelacion", name: "Rinomodelación" },
+      { id: "perfilado-mandibula", name: "Perfilado de mandíbula" },
+    ],
+  },
+  {
+    category: "Bioestimuladores",
+    items: [
+      { id: "sculptra", name: "Sculptra" },
+      { id: "adn-salmon", name: "ADN de salmón" },
+      { id: "bioestimulador-ojera", name: "Bioestimulador para ojera" },
+    ],
+  },
 ];
 
 const timeSlots = [
@@ -54,7 +81,7 @@ const Booking = () => {
             <div className="p-4 bg-secondary/50 rounded-lg text-left space-y-2">
               <p className="font-body text-sm text-foreground">
                 <span className="text-muted-foreground">Servicio:</span>{" "}
-                {services.find(s => s.id === selectedService)?.name}
+                {serviceCategories.flatMap(c => c.items).find(s => s.id === selectedService)?.name}
               </p>
               <p className="font-body text-sm text-foreground">
                 <span className="text-muted-foreground">Fecha:</span>{" "}
@@ -121,21 +148,29 @@ const Booking = () => {
                   <User className="w-4 h-4" />
                   Selecciona un servicio
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {services.map((service) => (
-                    <button
-                      key={service.id}
-                      type="button"
-                      onClick={() => setSelectedService(service.id)}
-                      className={`p-4 text-left border rounded-lg transition-all duration-300 ${
-                        selectedService === service.id
-                          ? "border-primary bg-primary/10 glow-gold"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <p className="font-display text-sm text-foreground">{service.name}</p>
-                      <p className="font-body text-xs text-muted-foreground mt-1">{service.duration}</p>
-                    </button>
+                <div className="space-y-4">
+                  {serviceCategories.map((category) => (
+                    <div key={category.category}>
+                      <p className="font-body text-xs text-primary uppercase tracking-wider mb-2">
+                        {category.category}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {category.items.map((service) => (
+                          <button
+                            key={service.id}
+                            type="button"
+                            onClick={() => setSelectedService(service.id)}
+                            className={`p-3 text-left border rounded-lg transition-all duration-300 ${
+                              selectedService === service.id
+                                ? "border-primary bg-primary/10 glow-gold"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            <p className="font-display text-xs text-foreground">{service.name}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </motion.div>
