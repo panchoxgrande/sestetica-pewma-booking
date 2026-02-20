@@ -84,7 +84,7 @@ const Booking = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedService || !selectedDate || !selectedTime || !name || !phone) return;
+    if (!selectedService || !selectedDate || !selectedTime || !name || !phone || isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError("");
     try {
@@ -463,9 +463,9 @@ const Booking = () => {
               ) : (
                 <button
                   type="submit"
-                  disabled={!canProceed()}
+                  disabled={!canProceed() || isSubmitting}
                   className={`transition-all duration-500 ${
-                    canProceed()
+                    canProceed() && !isSubmitting
                       ? "btn-primary animate-pulse-glow"
                       : "px-8 py-3.5 font-body text-sm font-medium tracking-widest uppercase rounded-md bg-muted/50 text-muted-foreground/50 cursor-not-allowed"
                   }`}
