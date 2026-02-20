@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, User, Check, Sparkles, ArrowLeft, ArrowRight } from "lucide-react";
+import { Calendar, Clock, User, Check, Sparkles, ArrowLeft, ArrowRight, Mail, Loader2 } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { createBooking, getAvailableTimes } from "@/lib/api";
 
 const serviceCategories = [
   {
@@ -56,12 +57,47 @@ const Booking = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableTimes, setAvailableTimes] = useState<string[]>(timeSlots);
+  const [submitError, setSubmitError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (selectedDate) {
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      getAvailableTimes(dateStr)
+        .then((data) => {
+          setAvailableTimes(data.available_times);
+          if (selectedTime && !data.available_times.includes(selectedTime)) {
+            setSelectedTime(null);
+          }
+        })
+        .catch(() => setAvailableTimes(timeSlots));
+    }
+  }, [selectedDate, selectedTime]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedService && selectedDate && selectedTime && name && phone) {
+    if (!selectedService || !selectedDate || !selectedTime || !name || !phone) return;
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      const serviceName = serviceCategories.flatMap(c => c.items).find(s => s.id === selectedService)?.name || selectedService;
+      await createBooking({
+        service_id: selectedService,
+        service_name: serviceName,
+        date: format(selectedDate, "yyyy-MM-dd"),
+        time: selectedTime,
+        client_name: name,
+        client_phone: phone,
+        client_email: email,
+      });
       setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Error al agendar. Intenta nuevamente.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -136,6 +172,7 @@ const Booking = () => {
                   setSelectedTime(null);
                   setName("");
                   setPhone("");
+                  setEmail("");
                 }}
                 className="mt-8 btn-outline text-xs"
               >
@@ -286,7 +323,7 @@ const Booking = () => {
                         Selecciona horario
                       </label>
                       <div className="grid grid-cols-2 gap-3">
-                        {timeSlots.map((time) => (
+                        {availableTimes.map((time) => (
                           <button
                             key={time}
                             type="button"
@@ -351,6 +388,23 @@ const Booking = () => {
                       />
                     </div>
 
+                    <div>
+                      <label className="block font-body text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                        Email (opcional)
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full pl-11 pr-5 py-3.5 bg-secondary/20 border border-border/20 rounded-xl font-body text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all duration-300"
+                          placeholder="tu@email.com"
+                        />
+                      </div>
+                      <p className="font-body text-[10px] text-muted-foreground/50 mt-1.5">Para recibir confirmación por correo</p>
+                    </div>
+
                     <div className="p-5 bg-secondary/10 rounded-xl border border-border/10 space-y-2.5 mt-8">
                       <p className="font-body text-[10px] uppercase tracking-[0.2em] text-primary mb-3">Resumen de tu cita</p>
                       <div className="flex justify-between">
@@ -411,10 +465,19 @@ const Booking = () => {
                       : "px-8 py-3.5 font-body text-sm font-medium tracking-widest uppercase rounded-md bg-muted/50 text-muted-foreground/50 cursor-not-allowed"
                   }`}
                 >
-                  Confirmar Cita
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Agendando...
+                    </span>
+                  ) : "Confirmar Cita"}
                 </button>
               )}
             </div>
+
+            {submitError && (
+              <p className="mt-4 text-center font-body text-sm text-red-400">{submitError}</p>
+            )}
           </form>
         </div>
       </div>
