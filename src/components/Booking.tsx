@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Calendar, Clock, User, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar, Clock, User, Check, Sparkles, ArrowLeft, ArrowRight } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -43,7 +43,14 @@ const timeSlots = [
   "09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"
 ];
 
+const steps = [
+  { id: 1, label: "Servicio", icon: Sparkles },
+  { id: 2, label: "Fecha y Hora", icon: Calendar },
+  { id: 3, label: "Datos", icon: User },
+];
+
 const Booking = () => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -58,55 +65,83 @@ const Booking = () => {
     }
   };
 
-  const isFormComplete = selectedService && selectedDate && selectedTime && name && phone;
+  const canProceed = () => {
+    if (currentStep === 1) return !!selectedService;
+    if (currentStep === 2) return !!selectedDate && !!selectedTime;
+    if (currentStep === 3) return !!name && !!phone;
+    return false;
+  };
 
   if (isSubmitted) {
     return (
-      <section id="agendar" className="py-24 relative">
+      <section id="agendar" className="py-28 relative">
         <div className="container mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="max-w-lg mx-auto text-center p-12 bg-card border border-primary/30 rounded-lg glow-gold"
+            transition={{ duration: 0.6 }}
+            className="max-w-lg mx-auto text-center"
           >
-            <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-primary" />
+            <div className="glass-card rounded-2xl p-12 glow-gold-strong relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <Check className="w-10 h-10 text-primary" />
+              </motion.div>
+
+              <h3 className="font-display text-3xl text-foreground mb-3">
+                ¡Cita Agendada!
+              </h3>
+              <p className="font-body text-sm text-muted-foreground mb-8">
+                Tu cita ha sido reservada con éxito. Te contactaremos pronto para confirmar.
+              </p>
+
+              <div className="p-5 bg-secondary/30 rounded-xl text-left space-y-3 border border-border/30">
+                <div className="flex justify-between items-center">
+                  <span className="font-body text-xs text-muted-foreground uppercase tracking-wider">Servicio</span>
+                  <span className="font-body text-sm text-foreground">
+                    {serviceCategories.flatMap(c => c.items).find(s => s.id === selectedService)?.name}
+                  </span>
+                </div>
+                <div className="w-full h-px bg-border/30" />
+                <div className="flex justify-between items-center">
+                  <span className="font-body text-xs text-muted-foreground uppercase tracking-wider">Fecha</span>
+                  <span className="font-body text-sm text-foreground">
+                    {selectedDate && format(selectedDate, "PPP", { locale: es })}
+                  </span>
+                </div>
+                <div className="w-full h-px bg-border/30" />
+                <div className="flex justify-between items-center">
+                  <span className="font-body text-xs text-muted-foreground uppercase tracking-wider">Hora</span>
+                  <span className="font-body text-sm text-foreground">{selectedTime}</span>
+                </div>
+                <div className="w-full h-px bg-border/30" />
+                <div className="flex justify-between items-center">
+                  <span className="font-body text-xs text-muted-foreground uppercase tracking-wider">Profesional</span>
+                  <span className="font-body text-sm text-foreground">Dominique</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setCurrentStep(1);
+                  setSelectedService(null);
+                  setSelectedDate(undefined);
+                  setSelectedTime(null);
+                  setName("");
+                  setPhone("");
+                }}
+                className="mt-8 btn-outline text-xs"
+              >
+                Agendar otra cita
+              </button>
             </div>
-            <h3 className="font-display text-3xl text-foreground mb-4">
-              ¡Cita Agendada!
-            </h3>
-            <p className="font-body text-muted-foreground mb-6">
-              Tu cita ha sido reservada con éxito. Te contactaremos pronto para confirmar.
-            </p>
-            <div className="p-4 bg-secondary/50 rounded-lg text-left space-y-2">
-              <p className="font-body text-sm text-foreground">
-                <span className="text-muted-foreground">Servicio:</span>{" "}
-                {serviceCategories.flatMap(c => c.items).find(s => s.id === selectedService)?.name}
-              </p>
-              <p className="font-body text-sm text-foreground">
-                <span className="text-muted-foreground">Fecha:</span>{" "}
-                {selectedDate && format(selectedDate, "PPP", { locale: es })}
-              </p>
-              <p className="font-body text-sm text-foreground">
-                <span className="text-muted-foreground">Hora:</span> {selectedTime}
-              </p>
-              <p className="font-body text-sm text-foreground">
-                <span className="text-muted-foreground">Atendido por:</span> Dominique
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setIsSubmitted(false);
-                setSelectedService(null);
-                setSelectedDate(undefined);
-                setSelectedTime(null);
-                setName("");
-                setPhone("");
-              }}
-              className="mt-6 px-6 py-2.5 border border-primary/50 text-primary font-body text-sm font-medium tracking-wide rounded-sm hover:bg-primary/10 transition-colors duration-300"
-            >
-              Agendar otra cita
-            </button>
           </motion.div>
         </div>
       </section>
@@ -114,178 +149,274 @@ const Booking = () => {
   }
 
   return (
-    <section id="agendar" className="py-24 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
-      
+    <section id="agendar" className="py-28 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
+      <div className="absolute top-0 left-0 right-0 section-divider" />
+
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <h2 className="font-display text-4xl md:text-5xl font-light text-gradient-gold mb-4">
+          <span className="font-body text-[11px] tracking-[0.3em] uppercase text-primary mb-4 block">
+            Reservas
+          </span>
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-gradient-gold mb-6">
             Agenda tu Cita
           </h2>
-          <p className="font-body text-muted-foreground max-w-2xl mx-auto">
-            Reserva tu tratamiento con Dominique • Cada sesión dura 1 hora
+          <div className="decorative-line mx-auto mb-6" />
+          <p className="font-body text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
+            Reserva tu tratamiento con Dominique
           </p>
         </motion.div>
 
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Left column */}
-            <div className="space-y-8">
-              {/* Service selection */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <label className="flex items-center gap-2 font-body text-sm text-muted-foreground uppercase tracking-wider mb-4">
-                  <User className="w-4 h-4" />
-                  Selecciona un servicio
-                </label>
-                <div className="space-y-4">
-                  {serviceCategories.map((category) => (
-                    <div key={category.category}>
-                      <p className="font-body text-xs text-primary uppercase tracking-wider mb-2">
-                        {category.category}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {category.items.map((service) => (
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-center gap-0 mb-12">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <button
+                  onClick={() => {
+                    if (step.id < currentStep) setCurrentStep(step.id);
+                  }}
+                  className={`flex items-center gap-2.5 px-4 py-2 rounded-full transition-all duration-500 ${
+                    currentStep === step.id
+                      ? "bg-primary/15 border border-primary/30"
+                      : currentStep > step.id
+                        ? "text-primary cursor-pointer"
+                        : "text-muted-foreground/50"
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-body font-medium transition-all duration-500 ${
+                    currentStep === step.id
+                      ? "bg-primary text-primary-foreground"
+                      : currentStep > step.id
+                        ? "bg-primary/20 text-primary"
+                        : "bg-muted/50 text-muted-foreground/50"
+                  }`}>
+                    {currentStep > step.id ? <Check className="w-3.5 h-3.5" /> : step.id}
+                  </div>
+                  <span className="font-body text-xs tracking-wider uppercase hidden sm:inline">
+                    {step.label}
+                  </span>
+                </button>
+                {index < steps.length - 1 && (
+                  <div className={`w-12 h-px mx-2 transition-all duration-500 ${
+                    currentStep > step.id ? "bg-primary/40" : "bg-border/50"
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <AnimatePresence mode="wait">
+              {currentStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="glass-card rounded-2xl p-8 lg:p-10"
+                >
+                  <label className="flex items-center gap-2 font-body text-[11px] text-muted-foreground uppercase tracking-[0.2em] mb-6">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Selecciona un servicio
+                  </label>
+                  <div className="space-y-6">
+                    {serviceCategories.map((category) => (
+                      <div key={category.category}>
+                        <p className="font-display text-lg text-foreground mb-3">
+                          {category.category}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {category.items.map((service) => (
+                            <button
+                              key={service.id}
+                              type="button"
+                              onClick={() => setSelectedService(service.id)}
+                              className={`p-3.5 text-left rounded-xl transition-all duration-300 ${
+                                selectedService === service.id
+                                  ? "bg-primary/10 border border-primary/40 glow-gold"
+                                  : "bg-secondary/30 border border-border/30 hover:border-primary/20 hover:bg-secondary/50"
+                              }`}
+                            >
+                              <p className="font-body text-xs text-foreground leading-relaxed">{service.name}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {currentStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="glass-card rounded-2xl p-8 lg:p-10"
+                >
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <label className="flex items-center gap-2 font-body text-[11px] text-muted-foreground uppercase tracking-[0.2em] mb-6">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        Selecciona fecha
+                      </label>
+                      <div className="p-4 bg-secondary/20 rounded-xl border border-border/20">
+                        <CalendarComponent
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={setSelectedDate}
+                          locale={es}
+                          disabled={(date) => date < new Date() || date.getDay() === 0}
+                          className="mx-auto"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 font-body text-[11px] text-muted-foreground uppercase tracking-[0.2em] mb-6">
+                        <Clock className="w-4 h-4 text-primary" />
+                        Selecciona horario
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {timeSlots.map((time) => (
                           <button
-                            key={service.id}
+                            key={time}
                             type="button"
-                            onClick={() => setSelectedService(service.id)}
-                            className={`p-3 text-left border rounded-lg transition-all duration-300 ${
-                              selectedService === service.id
-                                ? "border-primary bg-primary/10 glow-gold"
-                                : "border-border hover:border-primary/50"
+                            onClick={() => setSelectedTime(time)}
+                            className={`py-4 px-4 text-center rounded-xl font-body text-sm transition-all duration-300 ${
+                              selectedTime === time
+                                ? "bg-primary/10 border border-primary/40 text-foreground glow-gold"
+                                : "bg-secondary/20 border border-border/20 text-muted-foreground hover:border-primary/20 hover:text-foreground"
                             }`}
                           >
-                            <p className="font-display text-xs text-foreground">{service.name}</p>
+                            {time}
                           </button>
                         ))}
                       </div>
+                      <p className="font-body text-[10px] text-muted-foreground/60 mt-4 tracking-wider uppercase text-center">
+                        Cada sesión dura 1 hora
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
+                  </div>
+                </motion.div>
+              )}
 
-              {/* Time selection */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                <label className="flex items-center gap-2 font-body text-sm text-muted-foreground uppercase tracking-wider mb-4">
-                  <Clock className="w-4 h-4" />
-                  Selecciona horario
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setSelectedTime(time)}
-                      className={`py-3 px-2 text-center border rounded-lg font-body text-sm transition-all duration-300 ${
-                        selectedTime === time
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border text-muted-foreground hover:border-primary/50"
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
+              {currentStep === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="glass-card rounded-2xl p-8 lg:p-10"
+                >
+                  <label className="flex items-center gap-2 font-body text-[11px] text-muted-foreground uppercase tracking-[0.2em] mb-8">
+                    <User className="w-4 h-4 text-primary" />
+                    Tus datos
+                  </label>
 
-              {/* Contact info */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="space-y-4"
+                  <div className="max-w-md mx-auto space-y-6">
+                    <div>
+                      <label className="block font-body text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                        Nombre completo
+                      </label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full px-5 py-3.5 bg-secondary/20 border border-border/20 rounded-xl font-body text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all duration-300"
+                        placeholder="Tu nombre"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-body text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full px-5 py-3.5 bg-secondary/20 border border-border/20 rounded-xl font-body text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all duration-300"
+                        placeholder="+56 9 1234 5678"
+                        required
+                      />
+                    </div>
+
+                    <div className="p-5 bg-secondary/10 rounded-xl border border-border/10 space-y-2.5 mt-8">
+                      <p className="font-body text-[10px] uppercase tracking-[0.2em] text-primary mb-3">Resumen de tu cita</p>
+                      <div className="flex justify-between">
+                        <span className="font-body text-xs text-muted-foreground">Servicio</span>
+                        <span className="font-body text-xs text-foreground">
+                          {serviceCategories.flatMap(c => c.items).find(s => s.id === selectedService)?.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-body text-xs text-muted-foreground">Fecha</span>
+                        <span className="font-body text-xs text-foreground">
+                          {selectedDate && format(selectedDate, "PPP", { locale: es })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-body text-xs text-muted-foreground">Hora</span>
+                        <span className="font-body text-xs text-foreground">{selectedTime}</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex items-center justify-between mt-8">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                className={`flex items-center gap-2 font-body text-xs tracking-wider uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 ${
+                  currentStep === 1 ? "invisible" : ""
+                }`}
               >
-                <div>
-                  <label className="block font-body text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 bg-card border border-border rounded-lg font-body text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
-                    placeholder="Tu nombre"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-body text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-3 bg-card border border-border rounded-lg font-body text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
-                    placeholder="+56 9 1234 5678"
-                    required
-                  />
-                </div>
-              </motion.div>
+                <ArrowLeft className="w-4 h-4" />
+                Anterior
+              </button>
+
+              {currentStep < 3 ? (
+                <button
+                  type="button"
+                  onClick={() => canProceed() && setCurrentStep(currentStep + 1)}
+                  disabled={!canProceed()}
+                  className={`flex items-center gap-2 transition-all duration-500 ${
+                    canProceed()
+                      ? "btn-primary"
+                      : "px-8 py-3.5 font-body text-sm font-medium tracking-widest uppercase rounded-md bg-muted/50 text-muted-foreground/50 cursor-not-allowed"
+                  }`}
+                >
+                  Siguiente
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!canProceed()}
+                  className={`transition-all duration-500 ${
+                    canProceed()
+                      ? "btn-primary animate-pulse-glow"
+                      : "px-8 py-3.5 font-body text-sm font-medium tracking-widest uppercase rounded-md bg-muted/50 text-muted-foreground/50 cursor-not-allowed"
+                  }`}
+                >
+                  Confirmar Cita
+                </button>
+              )}
             </div>
-
-            {/* Right column - Calendar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <label className="flex items-center gap-2 font-body text-sm text-muted-foreground uppercase tracking-wider mb-4">
-                <Calendar className="w-4 h-4" />
-                Selecciona fecha
-              </label>
-              <div className="p-4 bg-card border border-border rounded-lg">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  locale={es}
-                  disabled={(date) => date < new Date() || date.getDay() === 0}
-                  className="mx-auto"
-                />
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Submit button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-10 text-center"
-          >
-            <button
-              type="submit"
-              disabled={!isFormComplete}
-              className={`px-12 py-4 font-body text-sm font-medium tracking-widest uppercase rounded-sm transition-all duration-300 ${
-                isFormComplete
-                  ? "bg-primary text-primary-foreground hover:bg-gold-glow glow-gold"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
-            >
-              Confirmar Cita
-            </button>
-          </motion.div>
-        </form>
+          </form>
+        </div>
       </div>
     </section>
   );
