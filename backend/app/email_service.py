@@ -54,6 +54,8 @@ def send_booking_confirmation(client_name: str, client_email: str, service_name:
         return
     client_name = escape(client_name)
     service_name = escape(service_name)
+    date = escape(date)
+    time = escape(time)
     subject = "Confirmación de cita - Clínica Pewma"
     html = f"""
     <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0d0f14; color: #ede8df; padding: 40px; border-radius: 12px;">
@@ -84,6 +86,8 @@ def send_booking_confirmed(client_name: str, client_email: str, service_name: st
         return
     client_name = escape(client_name)
     service_name = escape(service_name)
+    date = escape(date)
+    time = escape(time)
     subject = "¡Cita Confirmada! - Clínica Pewma"
     html = f"""
     <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0d0f14; color: #ede8df; padding: 40px; border-radius: 12px;">
@@ -115,6 +119,8 @@ def send_booking_cancelled(client_name: str, client_email: str, service_name: st
         return
     client_name = escape(client_name)
     service_name = escape(service_name)
+    date = escape(date)
+    time = escape(time)
     subject = "Cita Cancelada - Clínica Pewma"
     html = f"""
     <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0d0f14; color: #ede8df; padding: 40px; border-radius: 12px;">
@@ -143,11 +149,13 @@ def send_booking_cancelled(client_name: str, client_email: str, service_name: st
 def send_admin_new_booking_notification(client_name: str, client_phone: str, client_email: str, service_name: str, date: str, time: str):
     if not ADMIN_EMAIL:
         return
+    subject = f"Nueva cita: {client_name} - {service_name}"
     client_name = escape(client_name)
     client_phone = escape(client_phone)
     client_email = escape(client_email)
     service_name = escape(service_name)
-    subject = f"Nueva cita: {client_name} - {service_name}"
+    date = escape(date)
+    time = escape(time)
     html = f"""
     <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0d0f14; color: #ede8df; padding: 40px; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 30px;">
