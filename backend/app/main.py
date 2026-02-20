@@ -77,6 +77,14 @@ async def healthz():
 @app.post("/api/bookings")
 async def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: aiosqlite.Connection = Depends(get_db)):
     cursor = await db.execute(
+        "SELECT id FROM bookings WHERE date = ? AND time = ? AND status != 'cancelada'",
+        (booking.date, booking.time),
+    )
+    existing = await cursor.fetchone()
+    if existing:
+        raise HTTPException(status_code=409, detail="Este horario ya está reservado. Por favor selecciona otro.")
+
+    cursor = await db.execute(
         """INSERT INTO bookings (service_id, service_name, date, time, client_name, client_phone, client_email, status)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')""",
         (booking.service_id, booking.service_name, booking.date, booking.time, booking.client_name, booking.client_phone, booking.client_email or ""),
