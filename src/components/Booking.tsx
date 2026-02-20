@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, User, Check, Sparkles, ArrowLeft, ArrowRight, Mail, Loader2 } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -62,6 +62,11 @@ const Booking = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTimes, setAvailableTimes] = useState<string[]>(timeSlots);
   const [submitError, setSubmitError] = useState("");
+  const selectedTimeRef = useRef(selectedTime);
+
+  useEffect(() => {
+    selectedTimeRef.current = selectedTime;
+  }, [selectedTime]);
 
   useEffect(() => {
     if (selectedDate) {
@@ -69,13 +74,13 @@ const Booking = () => {
       getAvailableTimes(dateStr)
         .then((data) => {
           setAvailableTimes(data.available_times);
-          if (selectedTime && !data.available_times.includes(selectedTime)) {
+          if (selectedTimeRef.current && !data.available_times.includes(selectedTimeRef.current)) {
             setSelectedTime(null);
           }
         })
         .catch(() => setAvailableTimes(timeSlots));
     }
-  }, [selectedDate, selectedTime]);
+  }, [selectedDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
