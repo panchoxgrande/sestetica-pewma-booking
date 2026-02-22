@@ -11,7 +11,7 @@ fastapi = {extras = ["standard"], version = "^0.129.0"}
 psycopg = {extras = ["binary"], version = "^3.3.3"}
 aiosqlite = "^0.22.1"
 python-jose = {extras = ["cryptography"], version = "^3.5.0"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+bcrypt = "^4.0.0"
 python-dotenv = "^1.2.1"
 
 
