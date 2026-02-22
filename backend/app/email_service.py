@@ -3,6 +3,8 @@ import os
 from html import escape
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import formataddr
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -27,10 +29,11 @@ def send_email(to_email: str, subject: str, html_body: str):
         return False
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"Clínica Pewma <{FROM_EMAIL}>"
+    msg["Subject"] = Header(subject, "utf-8")
+    msg["From"] = formataddr((str(Header("Clinica Pewma", "utf-8")), FROM_EMAIL))
     msg["To"] = to_email
-    msg.attach(MIMEText(html_body, "html"))
+    msg["MIME-Version"] = "1.0"
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     try:
         if SMTP_PORT == 465:
